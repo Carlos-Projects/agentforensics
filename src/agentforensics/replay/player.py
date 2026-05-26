@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import time
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from datetime import datetime
 from typing import Any
 
@@ -19,7 +19,7 @@ def replay_events(
     events: list[dict[str, Any]],
     speed: float = 1.0,
     interactive: bool = False,
-    on_event: callable | None = None,  # type: ignore[type-arg]
+    on_event: Callable[[dict[str, Any]], Any] | None = None,
 ) -> Iterator[dict[str, Any]]:
     """Replay events in chronological order with optional real-time pacing.
 

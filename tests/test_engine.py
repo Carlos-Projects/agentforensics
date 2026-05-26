@@ -129,7 +129,70 @@ class TestForensicsEngine:
         assert len(results) == 1
         assert results[0]["source"] == "mcpguard"
 
-    def test_query_events_filter_by_severity(self) -> None:
+    def test_query_events_limit(self) -> None:
+        engine = ForensicsEngine()
+        for i in range(5):
+            engine.ingest_structured({"source": "a", "event_type": "x", "timestamp": f"2025-01-01T00:00:0{i}Z"})
+        results = engine.query_events(limit=2)
+        assert len(results) == 2
+
+    def test_query_events_min_risk(self) -> None:
+        engine = ForensicsEngine()
+        engine.ingest_structured(
+            {"source": "a", "event_type": "x", "risk_score": 3.0, "timestamp": "2025-01-01T00:00:00Z"}
+        )
+        engine.ingest_structured(
+            {"source": "a", "event_type": "x", "risk_score": 7.0, "timestamp": "2025-01-01T00:00:01Z"}
+        )
+        results = engine.query_events(min_risk=5.0)
+        assert len(results) == 1
+        assert results[0]["risk_score"] == 7.0
+
+    def test_analyze_anomalies_with_blocked_chain(self) -> None:
+        engine = ForensicsEngine()
+        for i in range(4):
+            engine.ingest_structured(
+                {
+                    "source": "test",
+                    "event_type": "exploit",
+                    "severity": "high",
+                    "blocked": True,
+                    "risk_score": 5.0,
+                    "timestamp": f"2025-01-01T00:00:0{i}Z",
+                }
+            )
+        anomalies = engine.analyze_anomalies()
+        assert any(a["type"] == "blocked_chain" for a in anomalies)
+
+    def test_analyze_deviations_with_policy_and_events(self) -> None:
+        engine = ForensicsEngine()
+        engine.ingest_structured(
+            {
+                "source": "test",
+                "event_type": "http_request",
+                "severity": "high",
+                "target": "evil.com",
+                "risk_score": 9.0,
+                "timestamp": "2025-01-01T00:00:00Z",
+            }
+        )
+        deviations = engine.analyze_deviations(policy={"blocked_tools": ["http_request"], "max_risk_score": 5.0})
+        assert len(deviations) >= 2  # blocked tool + high risk
+        assert deviations[0]["type"] == "policy_violation"
+
+    def test_generate_report_with_evidence(self) -> None:
+        engine = ForensicsEngine()
+        engine.ingest_structured({"source": "test", "event_type": "test", "timestamp": "2025-01-01T00:00:00Z"})
+        engine.add_evidence("EV-X", b"test data")
+        report = engine.generate_report(fmt="markdown", incident_id="INC-EV")
+        assert "INC-EV" in report
+
+    def test_check_compliance_returns_checks(self) -> None:
+        engine = ForensicsEngine()
+        result = engine.check_compliance()
+        assert len(result["checks"]) == 10
+        assert "framework" in result
+        assert result["framework"] == "nist_ai_rmf"
         engine = ForensicsEngine()
         engine.ingest_structured(
             {"source": "x", "event_type": "x", "severity": "critical", "timestamp": "2025-01-01T00:00:00Z"}

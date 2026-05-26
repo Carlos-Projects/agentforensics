@@ -73,7 +73,7 @@ class TimelineBuilder:
 
     def count(self) -> int:
         """Total events in the timeline."""
-        return self._db.execute("SELECT COUNT(*) FROM timeline_events").fetchone()[0]  # type: ignore[index]
+        return self._db.execute("SELECT COUNT(*) FROM timeline_events").fetchone()[0]
 
     def query(
         self,
