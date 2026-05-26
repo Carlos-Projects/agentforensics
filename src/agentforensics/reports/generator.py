@@ -136,128 +136,78 @@ def _render_html(**ctx: Any) -> str:
 
 
 def _render_timeline_table(events: list[dict[str, Any]], fmt: str) -> str:
+    """Render a timeline table in markdown format (HTML uses Jinja2)."""
     if not events:
-        return "No events recorded.\n" if fmt == "markdown" else "<p>No events recorded.</p>"
+        return "No events recorded.\n"
 
-    lines: list[str] = []
-    if fmt == "markdown":
-        lines.append("| # | Source | Severity | Event | Timestamp | Risk |")
-        lines.append("|---|---|---|---|---|---|")
-        for i, ev in enumerate(events[:50], 1):
-            sev = ev.get("severity", "?")
-            title = (ev.get("title") or ev.get("event_type") or "?")[:60]
-            ts = ev.get("timestamp", "?")[:19]
-            risk = f"{float(ev.get('risk_score', 0)):.1f}"
-            src = ev.get("source", "?")
-            lines.append(f"| {i} | {src} | {sev} | {title} | {ts} | {risk} |")
-        if len(events) > 50:
-            lines.append(f"| ... | *{len(events) - 50} more events* | | | | |")
-    else:
-        lines.append(
-            "<table><tr><th>#</th><th>Source</th><th>Severity</th><th>Event</th><th>Timestamp</th><th>Risk</th></tr>"
-        )
-        for i, ev in enumerate(events[:50], 1):
-            sev = ev.get("severity", "?")
-            css = f" severity-{sev}" if sev in ("critical", "high", "medium", "low") else ""
-            title = (ev.get("title") or ev.get("event_type") or "?")[:60]
-            ts = ev.get("timestamp", "?")[:19]
-            risk = f"{float(ev.get('risk_score', 0)):.1f}"
-            src = ev.get("source", "?")
-            lines.append(
-                f'<tr><td>{i}</td><td>{src}</td><td class="{css.strip()}">{sev}</td><td>{title}</td><td>{ts}</td><td>{risk}</td></tr>'
-            )
-        if len(events) > 50:
-            lines.append(f"<tr><td colspan='6'><em>… {len(events) - 50} more events</em></td></tr>")
-        lines.append("</table>")
+    lines: list[str] = [
+        "| # | Source | Severity | Event | Timestamp | Risk |",
+        "|---|---|---|---|---|---|",
+    ]
+    for i, ev in enumerate(events[:50], 1):
+        title = (ev.get("title") or ev.get("event_type") or "?")[:60]
+        ts = ev.get("timestamp", "?")[:19]
+        risk = f"{float(ev.get('risk_score', 0)):.1f}"
+        lines.append(f"| {i} | {ev.get('source', '?')} | {ev.get('severity', '?')} | {title} | {ts} | {risk} |")
+    if len(events) > 50:
+        lines.append(f"| ... | *{len(events) - 50} more events* | | | | |")
     return "\n".join(lines)
 
 
 def _render_correlation_summary(groups: list[dict[str, Any]], fmt: str) -> str:
+    """Render correlation summary in markdown format (HTML uses Jinja2)."""
     if not groups:
-        return "No correlated event groups.\n" if fmt == "markdown" else "<p>No correlated event groups.</p>"
+        return "No correlated event groups.\n"
 
-    lines: list[str] = []
-    if fmt == "markdown":
-        lines.append(f"**{len(groups)} correlated group(s) found**\n")
-        for g in groups[:10]:
-            lines.append(
-                f"- Window: {g['window_start'][:19]} → {g['window_end'][:19]} | "
-                f"{g['event_count']} events | Risk: {g['max_risk']:.1f} | "
-                f"Sources: {', '.join(g['sources'])}"
-            )
-        if len(groups) > 10:
-            lines.append(f"- … {len(groups) - 10} more groups")
-    else:
-        lines.append(f"<p><strong>{len(groups)} correlated group(s) found</strong></p><ul>")
-        for g in groups[:10]:
-            lines.append(
-                f"<li>{g['window_start'][:19]} → {g['window_end'][:19]} — "
-                f"{g['event_count']} events, risk {g['max_risk']:.1f} "
-                f"({', '.join(g['sources'])})</li>"
-            )
-        if len(groups) > 10:
-            lines.append(f"<li>… {len(groups) - 10} more groups</li>")
-        lines.append("</ul>")
+    lines: list[str] = [f"**{len(groups)} correlated group(s) found**\n"]
+    for g in groups[:10]:
+        lines.append(
+            f"- Window: {g['window_start'][:19]} → {g['window_end'][:19]} | "
+            f"{g['event_count']} events | Risk: {g['max_risk']:.1f} | "
+            f"Sources: {', '.join(g['sources'])}"
+        )
+    if len(groups) > 10:
+        lines.append(f"- … {len(groups) - 10} more groups")
     return "\n".join(lines)
 
 
 def _render_deviations(deviations: list[dict[str, Any]], fmt: str) -> str:
+    """Render deviations in markdown format (HTML uses Jinja2)."""
     if not deviations:
-        return "No policy deviations detected.\n" if fmt == "markdown" else "<p>No policy deviations detected.</p>"
+        return "No policy deviations detected.\n"
 
-    lines: list[str] = []
-    if fmt == "markdown":
-        lines.append(f"**{len(deviations)} deviation(s) found**\n")
-        for d in deviations:
-            lines.append(f"- **[{d['type']}]** {d['description']}")
-    else:
-        lines.append(f"<p><strong>{len(deviations)} deviation(s) found</strong></p>")
-        for d in deviations:
-            lines.append(f'<div class="deviation"><strong>[{d["type"]}]</strong> {d["description"]}</div>')
+    lines: list[str] = [f"**{len(deviations)} deviation(s) found**\n"]
+    for d in deviations:
+        lines.append(f"- **[{d['type']}]** {d['description']}")
     return "\n".join(lines)
 
 
 def _render_anomalies(anomalies: list[dict[str, Any]], fmt: str) -> str:
+    """Render anomalies in markdown format (HTML uses Jinja2)."""
     if not anomalies:
-        return "No anomalies detected.\n" if fmt == "markdown" else "<p>No anomalies detected.</p>"
+        return "No anomalies detected.\n"
 
-    lines: list[str] = []
-    if fmt == "markdown":
-        lines.append(f"**{len(anomalies)} anomaly(ies) found**\n")
-        for a in anomalies:
-            sev = a.get("severity", "?")
-            score = f" (score: {a.get('score', 0):.1f})"
-            lines.append(f"- **[severity: {sev}]{score}** {a['description']}")
-    else:
-        lines.append(f"<p><strong>{len(anomalies)} anomaly(ies) found</strong></p>")
-        for a in anomalies:
-            sev = a.get("severity", "?")
-            lines.append(f'<div class="anomaly"><strong>[{sev}]</strong> {a["description"]}</div>')
+    lines: list[str] = [f"**{len(anomalies)} anomaly(ies) found**\n"]
+    for a in anomalies:
+        sev = a.get("severity", "?")
+        score = f" (score: {a.get('score', 0):.1f})"
+        lines.append(f"- **[severity: {sev}]{score}** {a['description']}")
     return "\n".join(lines)
 
 
 def _render_evidence(evidence_chain: list[dict[str, Any]], fmt: str) -> str:
+    """Render evidence in markdown format (HTML uses Jinja2)."""
     if not evidence_chain:
-        return "No evidence collected.\n" if fmt == "markdown" else "<p>No evidence collected.</p>"
+        return "No evidence collected.\n"
 
-    lines: list[str] = []
-    if fmt == "markdown":
-        lines.append(f"**{len(evidence_chain)} evidence entries**\n")
-        lines.append("| ID | Hash | Collector | Timestamp |")
-        lines.append("|---|---|---|---|")
-        for e in evidence_chain:
-            h = e.get("hash", "?")[:16]
-            lines.append(
-                f"| {e.get('evidence_id', '?')} | {h}… | {e.get('collector', '?')} | {e.get('timestamp', '?')[:19]} |"
-            )
-    else:
-        lines.append(f"<p><strong>{len(evidence_chain)} evidence entries</strong></p><table>")
-        lines.append("<tr><th>ID</th><th>Hash</th><th>Collector</th><th>Timestamp</th></tr>")
-        for e in evidence_chain:
-            h = e.get("hash", "?")[:16]
-            lines.append(
-                f"<tr><td>{e.get('evidence_id', '?')}</td><td>{h}…</td><td>{e.get('collector', '?')}</td>"
-                f"<td>{e.get('timestamp', '?')[:19]}</td></tr>"
-            )
-        lines.append("</table>")
+    lines: list[str] = [
+        f"**{len(evidence_chain)} evidence entries**\n",
+        "| ID | Hash | Collector | Timestamp |",
+        "|---|---|---|---|",
+    ]
+    for e in evidence_chain:
+        h = e.get("hash", "?")[:16]
+        lines.append(
+            f"| {e.get('evidence_id', '?')} | {h}… | {e.get('collector', '?')} | {e.get('timestamp', '?')[:19]} |"
+        )
     return "\n".join(lines)
