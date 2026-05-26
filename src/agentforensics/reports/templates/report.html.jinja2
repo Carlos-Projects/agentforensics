@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Agent Forensics Report — {{ incident_id }}</title>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; max-width: 960px; margin: 2rem auto; padding: 0 1rem; color: #333; }
+  h1, h2, h3 { color: #111; }
+  .meta { color: #666; font-size: 0.9em; }
+  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }
+  th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+  th { background: #f5f5f5; }
+  .severity-critical { color: #dc3545; font-weight: bold; }
+  .severity-high { color: #fd7e14; font-weight: bold; }
+  .severity-medium { color: #856404; }
+  .severity-low { color: #28a745; }
+  .deviation { background: #fff3cd; padding: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #ffc107; }
+  .anomaly { background: #f8d7da; padding: 0.5rem; margin: 0.5rem 0; border-left: 4px solid #dc3545; }
+</style>
+</head>
+<body>
+<h1>Agent Forensics Report</h1>
+<p class="meta">
+  <strong>Generated</strong>: {{ generated_at }}<br>
+  <strong>Incident ID</strong>: {{ incident_id }}<br>
+  <strong>Total events</strong>: {{ event_count }}<br>
+  <strong>Sources</strong>: {{ sources }}
+</p>
+
+<h2>Timeline</h2>
+{% if events %}
+<table>
+<tr><th>#</th><th>Source</th><th>Severity</th><th>Event</th><th>Timestamp</th><th>Risk</th></tr>
+{% for ev in events[:50] %}
+<tr>
+  <td>{{ loop.index }}</td>
+  <td>{{ ev.source|default("?") }}</td>
+  <td class="severity-{{ ev.severity|default("info") }}">{{ ev.severity|default("info") }}</td>
+  <td>{{ ev.title|default(ev.event_type|default("?")) }}</td>
+  <td>{{ (ev.timestamp|default(""))[:19] }}</td>
+  <td>{{ "%.1f"|format(ev.get("risk_score", 0)|float) }}</td>
+</tr>
+{% endfor %}
+{% if events|length > 50 %}
+<tr><td colspan="6"><em>… {{ events|length - 50 }} more events</em></td></tr>
+{% endif %}
+</table>
+{% else %}
+<p>No events recorded.</p>
+{% endif %}
+
+<h2>Correlated Event Groups</h2>
+{% if groups %}
+<p><strong>{{ groups|length }} correlated group(s) found</strong></p>
+<ul>
+{% for g in groups[:10] %}
+<li>{{ (g.window_start|default(""))[:19] }} → {{ (g.window_end|default(""))[:19] }} — {{ g.event_count|default(0) }} events, risk {{ "%.1f"|format(g.max_risk|default(0)|float) }} ({{ g.sources|default([])|join(", ") }})</li>
+{% endfor %}
+{% if groups|length > 10 %}
+<li>… {{ groups|length - 10 }} more groups</li>
+{% endif %}
+</ul>
+{% else %}
+<p>No correlated event groups.</p>
+{% endif %}
+
+<h2>Policy Deviations</h2>
+{% if deviations %}
+<p><strong>{{ deviations|length }} deviation(s) found</strong></p>
+{% for d in deviations %}
+<div class="deviation"><strong>[{{ d.type|default("?") }}]</strong> {{ d.description|default("") }}</div>
+{% endfor %}
+{% else %}
+<p>No policy deviations detected.</p>
+{% endif %}
+
+<h2>Anomalies Detected</h2>
+{% if anomalies %}
+<p><strong>{{ anomalies|length }} anomaly(ies) found</strong></p>
+{% for a in anomalies %}
+<div class="anomaly"><strong>[{{ a.severity|default("?") }}]</strong> (score: {{ "%.1f"|format(a.score|default(0)|float) }}) {{ a.description|default("") }}</div>
+{% endfor %}
+{% else %}
+<p>No anomalies detected.</p>
+{% endif %}
+
+<h2>Evidence Chain</h2>
+{% if evidence_chain %}
+<table>
+<tr><th>ID</th><th>Hash</th><th>Collector</th><th>Timestamp</th></tr>
+{% for e in evidence_chain %}
+<tr><td>{{ e.evidence_id|default("?") }}</td><td>{{ (e.hash|default(""))[:16] }}…</td><td>{{ e.collector|default("?") }}</td><td>{{ (e.timestamp|default(""))[:19] }}</td></tr>
+{% endfor %}
+</table>
+{% else %}
+<p>No evidence collected.</p>
+{% endif %}
+</body>
+</html>

@@ -47,7 +47,7 @@ coverage.xml
 *.sqlite3
 
 # Generated reports
-reports/
+./reports/
 output/
 
 # Environment
