@@ -235,3 +235,47 @@ class TestCli:
         assert "Agent" in content or "Forensics" in content
         for p in (mcp, db, out):
             p.unlink()
+
+    # --- replay ---
+
+    def test_replay_no_db(self) -> None:
+        result = runner.invoke(app, ["replay", "--input", "/tmp/nonexistent.db"])
+        assert result.exit_code != 0
+
+    def test_replay_empty_db(self) -> None:
+        db = Path(tempfile.mktemp(suffix=".db"))
+        mcp = _make_log([])
+        runner.invoke(app, ["ingest", "--mcpguard", str(mcp), "--output", str(db)])
+        result = runner.invoke(app, ["replay", "--input", str(db)])
+        assert "No events to replay" in result.stdout
+        for p in (mcp, db):
+            p.unlink()
+
+    def test_replay_with_events(self) -> None:
+        mcp = _make_log(
+            [
+                {"event_type": "a", "timestamp": "2025-01-01T00:00:00Z"},
+                {"event_type": "b", "timestamp": "2025-01-01T00:00:01Z"},
+            ]
+        )
+        db = Path(tempfile.mktemp(suffix=".db"))
+        runner.invoke(app, ["ingest", "--mcpguard", str(mcp), "--output", str(db)])
+        result = runner.invoke(app, ["replay", "--input", str(db), "--speed", "0"])
+        assert result.exit_code == 0
+        assert "Replaying" in result.stdout
+        for p in (mcp, db):
+            p.unlink()
+
+    def test_replay_with_limit(self) -> None:
+        mcp = _make_log([{"event_type": f"e{i}", "timestamp": f"2025-01-01T00:00:0{i}Z"} for i in range(5)])
+        db = Path(tempfile.mktemp(suffix=".db"))
+        runner.invoke(app, ["ingest", "--mcpguard", str(mcp), "--output", str(db)])
+        result = runner.invoke(app, ["replay", "--input", str(db), "--speed", "0", "--limit", "2"])
+        assert result.exit_code == 0
+        assert "Replaying 2" in result.stdout
+        for p in (mcp, db):
+            p.unlink()
+
+    def test_help_includes_replay(self) -> None:
+        result = runner.invoke(app, ["--help"])
+        assert "replay" in result.stdout

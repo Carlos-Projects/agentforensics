@@ -81,7 +81,7 @@ def render_timeline_chart(
         hovermode="closest",
     )
 
-    return fig.to_html(include_plotlyjs="cdn", full_html=False)
+    return fig.to_html(include_plotlyjs="cdn", full_html=False)  # type: ignore[no-any-return]
 
 
 def render_severity_pie(events: list[dict[str, Any]]) -> str:
@@ -119,7 +119,7 @@ def render_severity_pie(events: list[dict[str, Any]]) -> str:
             "info": "#17a2b8",
         },
     )
-    return fig.to_html(include_plotlyjs="cdn", full_html=False)
+    return fig.to_html(include_plotlyjs="cdn", full_html=False)  # type: ignore[no-any-return]
 
 
 def render_risk_timeline(events: list[dict[str, Any]]) -> str:
@@ -163,7 +163,7 @@ def render_risk_timeline(events: list[dict[str, Any]]) -> str:
         template="plotly_white",
         height=400,
     )
-    return fig.to_html(include_plotlyjs="cdn", full_html=False)
+    return fig.to_html(include_plotlyjs="cdn", full_html=False)  # type: ignore[no-any-return]
 
 
 def _empty_chart_html(title: str) -> str:

@@ -17,11 +17,23 @@ from agentforensics.timeline.builder import TimelineBuilder
 
 
 class ForensicsEngine:
-    """Main forensics analysis engine with SQLite persistence."""
+    """Main forensics analysis engine with SQLite persistence.
+
+    Can be used as a context manager::
+
+        with ForensicsEngine("path.db") as engine:
+            engine.ingest_mcpguard(path)
+    """
 
     def __init__(self, db_path: str | Path = ":memory:") -> None:
         self._db_path = db_path
         self._timeline = TimelineBuilder(db_path)
+
+    def __enter__(self) -> ForensicsEngine:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
     def ingest_mcpguard(self, path: Path) -> int:
         """Ingest MCPGuard logs.

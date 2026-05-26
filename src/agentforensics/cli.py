@@ -12,6 +12,7 @@ from rich.table import Table
 
 from agentforensics import __version__
 from agentforensics.engine import ForensicsEngine
+from agentforensics.replay.player import replay_events
 
 app = typer.Typer(
     name="agentforensics",
@@ -256,6 +257,51 @@ def analyze(
     )
 
     engine.close()
+
+
+@app.command()
+def replay(
+    input_db: Path = typer.Option(
+        Path("forensics.db"),
+        "--input",
+        "-i",
+        help="Input database path",
+    ),
+    speed: float = typer.Option(
+        1.0,
+        "--speed",
+        "-s",
+        help="Playback speed multiplier (0 = instant)",
+    ),
+    limit: int = typer.Option(
+        100,
+        "--limit",
+        "-n",
+        help="Max events to replay",
+    ),
+) -> None:
+    """Replay agent behaviour from the forensic timeline."""
+    if not input_db.exists():
+        console.print(f"[red]Error:[/red] Database not found: {input_db}")
+        raise typer.Exit(1)
+
+    engine = _make_engine(input_db)
+    events = engine.build_timeline()[:limit]
+    engine.close()
+
+    if not events:
+        console.print("[yellow]No events to replay.[/yellow]")
+        return
+
+    console.print(f"[bold]Replaying {len(events)} event(s) at {speed}x speed[/bold]")
+    console.print()
+
+    for ev in replay_events(events, speed=speed):
+        ts = ev.get("timestamp", "?")[:19]
+        src = ev.get("source", "?")
+        title = (ev.get("title") or ev.get("event_type") or "?")[:50]
+        delay = ev.get("_replay_delay", 0)
+        console.print(f"  [{ts}] [bold]{src}[/bold] {title}  [dim](+{delay:.1f}s)[/dim]")
 
 
 @app.command()

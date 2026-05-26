@@ -36,6 +36,6 @@ def safe_json_loads(line: str) -> dict[str, Any]:
         Parsed dictionary or empty dict.
     """
     try:
-        return json.loads(line)
+        return json.loads(line)  # type: ignore[no-any-return]
     except (json.JSONDecodeError, TypeError):
         return {}

@@ -10,12 +10,25 @@ from typing import Any
 
 
 class TimelineBuilder:
-    """Build and persist forensic timelines backed by SQLite."""
+    """Build and persist forensic timelines backed by SQLite.
+
+    Can be used as a context manager::
+
+        with TimelineBuilder("path.db") as tb:
+            tb.insert(event)
+    """
 
     def __init__(self, db_path: str | Path = ":memory:") -> None:
-        self._db = sqlite3.connect(str(db_path))
+        self._db_path = str(db_path)
+        self._db = sqlite3.connect(self._db_path)
         self._db.row_factory = sqlite3.Row
         self._init_schema()
+
+    def __enter__(self) -> TimelineBuilder:
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        self.close()
 
     def _init_schema(self) -> None:
         self._db.executescript("""
@@ -73,7 +86,7 @@ class TimelineBuilder:
 
     def count(self) -> int:
         """Total events in the timeline."""
-        return self._db.execute("SELECT COUNT(*) FROM timeline_events").fetchone()[0]
+        return self._db.execute("SELECT COUNT(*) FROM timeline_events").fetchone()[0]  # type: ignore[no-any-return]
 
     def query(
         self,
