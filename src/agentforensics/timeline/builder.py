@@ -114,6 +114,9 @@ class TimelineBuilder:
             where.append("risk_score >= ?")
             params.append(min_risk)
 
+        # WARNING: `where` list must only contain hardcoded clauses with ?
+        # placeholders for values. NEVER interpolate user-controlled strings
+        # into `where` — always use parameterized queries via `self._db.execute()`.
         clause = f"WHERE {' AND '.join(where)}" if where else ""
         rows = self._db.execute(
             f"SELECT * FROM timeline_events {clause} ORDER BY timestamp ASC, id ASC LIMIT ? OFFSET ?",

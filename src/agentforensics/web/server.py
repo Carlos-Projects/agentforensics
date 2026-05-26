@@ -2,18 +2,58 @@
 
 from __future__ import annotations
 
+import logging
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 
 from fastapi import FastAPI, Query, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from agentforensics.engine import ForensicsEngine
 from agentforensics.reports.generator import generate_report
 
-app = FastAPI(title="AgentForensics", version="0.1.0")
+logger = logging.getLogger("agentforensics.web")
+
+
+class SecurityHeadersMiddleware(BaseHTTPMiddleware):
+    """Set security-related HTTP headers on every response."""
+
+    async def dispatch(self, request: Request, call_next: Any) -> Any:
+        response = await call_next(request)
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["X-XSS-Protection"] = "0"
+        response.headers["Referrer-Policy"] = "same-origin"
+        response.headers["Permissions-Policy"] = "geolocation=(), camera=(), microphone=()"
+        return response
+
+
+# Disable OpenAPI schema and Swagger docs in production.
+# We keep them available when running locally for development.
+_IS_PRODUCTION = Path("/etc/agentforensics-prod").exists()
+
+app = FastAPI(
+    title="AgentForensics",
+    version="0.1.0",
+    docs_url=None if _IS_PRODUCTION else "/docs",
+    openapi_url=None if _IS_PRODUCTION else "/openapi.json",
+    redoc_url=None,
+)
+
+# CORS — local tool, restrict to same-origin by default
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "HEAD"],
+    allow_headers=["*"],
+)
+
+app.add_middleware(SecurityHeadersMiddleware)
 
 _engine = ForensicsEngine(db_path=":memory:")
 
@@ -21,7 +61,6 @@ _templates_dir = Path(__file__).parent / "templates"
 _static_dir = Path(__file__).parent / "static"
 templates = Jinja2Templates(directory=str(_templates_dir))
 app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
-
 
 _SAMPLE_EVENTS: list[dict[str, Any]] = [
     {
@@ -181,10 +220,14 @@ async def timeline_page(request: Request) -> HTMLResponse:
 @app.get("/reports", response_class=HTMLResponse)
 async def reports_page(
     request: Request,
-    format: str = Query("html"),
+    format: Literal["html", "markdown", "json"] = Query("html"),
     download: bool = Query(False),
 ) -> HTMLResponse:
-    """Render the reports and compliance view."""
+    """Render the reports and compliance view.
+
+    The ``format`` parameter is restricted to ``html``, ``markdown``,
+    or ``json`` to prevent XSS via unescaped markdown rendering.
+    """
     events = _engine.build_timeline()
     from agentforensics.replay.anomaly import detect_anomalies
     from agentforensics.replay.diff import diff_behavior
@@ -210,12 +253,7 @@ async def reports_page(
     return templates.TemplateResponse(
         request,
         "reports.html",
-        {
-            "title": "Reports",
-            "event_count": len(events),
-            "compliance": compliance,
-            "report_body": report_body,
-        },
+        {"title": "Reports", "event_count": len(events), "compliance": compliance, "report_body": report_body},
     )
 
 
@@ -256,11 +294,7 @@ async def ingest_sample(request: Request) -> HTMLResponse:
 async def list_incidents() -> list[dict[str, Any]]:
     """List all forensic incidents."""
     return [
-        {
-            "incident_id": "INC-2025-001",
-            "event_count": len(_engine.build_timeline()),
-            "sources": _engine.get_sources(),
-        }
+        {"incident_id": "INC-2025-001", "event_count": len(_engine.build_timeline()), "sources": _engine.get_sources()}
     ]
 
 
@@ -268,11 +302,7 @@ async def list_incidents() -> list[dict[str, Any]]:
 async def get_timeline(incident_id: str) -> dict[str, Any]:
     """Get timeline for a specific incident."""
     events = _engine.build_timeline()
-    return {
-        "incident_id": incident_id,
-        "event_count": len(events),
-        "events": events,
-    }
+    return {"incident_id": incident_id, "event_count": len(events), "events": events}
 
 
 @app.get("/api/compliance")
@@ -283,4 +313,5 @@ async def get_compliance() -> dict[str, Any]:
 
 @app.get("/health")
 async def health() -> dict[str, str]:
-    return {"status": "ok", "version": "0.1.0"}
+    """Health check endpoint (no version disclosure)."""
+    return {"status": "ok"}

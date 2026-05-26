@@ -40,9 +40,7 @@ dependencies = [
     "rich>=13.7.0",
     "typer>=0.12",
     "mcp-taxonomy>=0.1.0",
-    "sqlite-utils>=3.36",
     "orjson>=3.9",
-    "apscheduler>=3.10",
     "cryptography>=42.0",
     "python-dateutil>=2.9",
 ]
