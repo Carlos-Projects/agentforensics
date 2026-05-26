@@ -22,6 +22,8 @@ class TimelineBuilder:
         self._db_path = str(db_path)
         self._db = sqlite3.connect(self._db_path)
         self._db.row_factory = sqlite3.Row
+        self._db.execute("PRAGMA journal_mode=WAL")
+        self._db.execute("PRAGMA foreign_keys=ON")
         self._init_schema()
 
     def __enter__(self) -> TimelineBuilder:
@@ -78,10 +80,14 @@ class TimelineBuilder:
         return cur.lastrowid  # type: ignore[return-value]
 
     def insert_many(self, events: list[dict[str, Any]]) -> list[int]:
-        """Insert multiple events and return their row ids."""
+        """Insert multiple events in a single transaction."""
         ids: list[int] = []
-        for ev in events:
-            ids.append(self.insert(ev))
+        try:
+            for ev in events:
+                ids.append(self.insert(ev))
+        except Exception:
+            self._db.rollback()
+            raise
         return ids
 
     def count(self) -> int:

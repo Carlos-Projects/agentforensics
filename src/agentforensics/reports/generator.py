@@ -14,7 +14,7 @@ from agentforensics.timeline.correlator import correlate_events
 _TEMPLATES_DIR = Path(__file__).parent / "templates"
 _env = Environment(
     loader=FileSystemLoader(str(_TEMPLATES_DIR)),
-    autoescape=select_autoescape(),
+    autoescape=select_autoescape(enabled_extensions=("html", "htm", "xml", "xhtml", "jinja2")),
     cache_size=50,
 )
 

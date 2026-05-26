@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+from html import escape
 from pathlib import Path
 
 import typer
@@ -299,7 +300,7 @@ def replay(
     for ev in replay_events(events, speed=speed):
         ts = ev.get("timestamp", "?")[:19]
         src = ev.get("source", "?")
-        title = (ev.get("title") or ev.get("event_type") or "?")[:50]
+        title = escape((ev.get("title") or ev.get("event_type") or "?")[:50])
         delay = ev.get("_replay_delay", 0)
         console.print(f"  [{ts}] [bold]{src}[/bold] {title}  [dim](+{delay:.1f}s)[/dim]")
 

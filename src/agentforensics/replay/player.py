@@ -4,15 +4,9 @@ from __future__ import annotations
 
 import time
 from collections.abc import Callable, Iterator
-from datetime import datetime
 from typing import Any
 
-
-def _to_epoch(ts: str) -> float:
-    try:
-        return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
-    except (ValueError, TypeError):
-        return 0.0
+from agentforensics.utils.dates import to_epoch as _to_epoch
 
 
 def replay_events(

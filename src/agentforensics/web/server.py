@@ -48,7 +48,7 @@ app = FastAPI(
 # CORS — local tool, restrict to same-origin by default
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://127.0.0.1", "http://localhost"],
     allow_credentials=False,
     allow_methods=["GET", "POST", "HEAD"],
     allow_headers=["*"],
@@ -56,12 +56,25 @@ app.add_middleware(
 
 app.add_middleware(SecurityHeadersMiddleware)
 
-_engine = ForensicsEngine(db_path=":memory:")
+_engine: ForensicsEngine | None = None
 
 _templates_dir = Path(__file__).parent / "templates"
 _static_dir = Path(__file__).parent / "static"
 templates = Jinja2Templates(directory=str(_templates_dir))
 app.mount("/static", StaticFiles(directory=str(_static_dir)), name="static")
+
+
+def _get_engine() -> ForensicsEngine:
+    """Lazy-initialize the engine with a temp-file database."""
+    global _engine
+    if _engine is None:
+        import tempfile
+        db_path = tempfile.mktemp(suffix=".db")
+        _engine = ForensicsEngine(db_path=db_path)
+        _load_sample_data()
+    # mypy narrows type: _engine is guaranteed non-None after the if block
+    assert _engine is not None
+    return _engine
 
 _SAMPLE_EVENTS: list[dict[str, Any]] = [
     {
@@ -145,22 +158,21 @@ _SAMPLE_EVENTS: list[dict[str, Any]] = [
 
 
 def _load_sample_data() -> None:
-    """Load sample forensic events into the in-memory engine."""
+    """Load sample forensic events into the engine."""
+    engine = _get_engine()
     for ev in _SAMPLE_EVENTS:
         ev["raw"] = {}
-        _engine.ingest_structured(dict(ev))
-
-
-_load_sample_data()
+        engine.ingest_structured(dict(ev))
 
 
 @app.get("/", response_class=HTMLResponse)
 async def index(request: Request) -> HTMLResponse:
     """Render the main dashboard."""
-    events = _engine.build_timeline()
+    engine = _get_engine()
+    events = engine.build_timeline()
     event_count = len(events)
-    sources = _engine.get_sources()
-    types = _engine.get_event_types()
+    sources = engine.get_sources()
+    types = engine.get_event_types()
     blocked = sum(1 for e in events if e.get("blocked"))
     recent = events[-20:] if events else []
 
@@ -191,7 +203,8 @@ async def index(request: Request) -> HTMLResponse:
 @app.get("/timeline", response_class=HTMLResponse)
 async def timeline_page(request: Request) -> HTMLResponse:
     """Render the forensic timeline view."""
-    events = _engine.build_timeline()
+    engine = _get_engine()
+    events = engine.build_timeline()
     from agentforensics.timeline.correlator import correlate_events
 
     groups = correlate_events(events)
@@ -229,14 +242,15 @@ async def reports_page(
     The ``format`` parameter is restricted to ``html``, ``markdown``,
     or ``json`` to prevent XSS via unescaped markdown rendering.
     """
-    events = _engine.build_timeline()
+    engine = _get_engine()
+    events = engine.build_timeline()
     from agentforensics.replay.anomaly import detect_anomalies
     from agentforensics.replay.diff import diff_behavior
 
     anomalies = detect_anomalies(events)
     deviations = diff_behavior(events, policy={"blocked_tools": [], "blocked_paths": [], "max_risk_score": 10.0})
 
-    compliance = _engine.check_compliance()
+    compliance = engine.check_compliance()
 
     report_body = generate_report(
         timeline=events,
@@ -264,10 +278,11 @@ async def reports_page(
 @app.post("/ingest/sample", response_class=HTMLResponse)
 async def ingest_sample(request: Request) -> HTMLResponse:
     """Reload sample data and return updated dashboard."""
-    events = _engine.build_timeline()
+    engine = _get_engine()
+    events = engine.build_timeline()
     recent = events[-20:] if events else []
-    sources = _engine.get_sources()
-    types = _engine.get_event_types()
+    sources = _get_engine().get_sources()
+    types = _get_engine().get_event_types()
     blocked = sum(1 for e in events if e.get("blocked"))
 
     severity_html = ""
@@ -298,21 +313,22 @@ async def ingest_sample(request: Request) -> HTMLResponse:
 async def list_incidents() -> list[dict[str, Any]]:
     """List all forensic incidents."""
     return [
-        {"incident_id": "INC-2025-001", "event_count": len(_engine.build_timeline()), "sources": _engine.get_sources()}
+        {"incident_id": "INC-2025-001", "event_count": len(_get_engine().build_timeline()), "sources": _get_engine().get_sources()}
     ]
 
 
 @app.get("/api/timeline/{incident_id}")
 async def get_timeline(incident_id: str) -> dict[str, Any]:
     """Get timeline for a specific incident."""
-    events = _engine.build_timeline()
+    engine = _get_engine()
+    events = engine.build_timeline()
     return {"incident_id": incident_id, "event_count": len(events), "events": events}
 
 
 @app.get("/api/compliance")
 async def get_compliance() -> dict[str, Any]:
     """Get compliance check results."""
-    return _engine.check_compliance()
+    return _get_engine().check_compliance()
 
 
 @app.get("/health")

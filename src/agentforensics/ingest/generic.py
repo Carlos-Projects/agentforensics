@@ -15,11 +15,12 @@ from typing import Any
 _SYSLOG_RE = re.compile(r"^\w{3}\s+\d{1,2}\s+\d{2}:\d{2}:\d{2}\s+\S+\s+\S")
 
 
-def _detect_format(path: Path) -> str:
-    """Detect log format by inspecting the first lines."""
-    with open(path, encoding="utf-8") as f:
-        first = f.readline().strip()
-        second = f.readline().strip()
+def _detect_format(lines: list[str]) -> str:
+    """Detect log format from the first lines of a file."""
+    if not lines:
+        return "plain"
+    first = lines[0].strip() if len(lines) > 0 else ""
+    second = lines[1].strip() if len(lines) > 1 else ""
 
     if _looks_like_json(first):
         return "jsonl"
@@ -73,7 +74,7 @@ def _parse_syslog_line(line: str, lineno: int) -> dict[str, Any]:
     }
 
 
-def parse_generic_log(path: Path, fmt: str = "auto") -> Iterator[dict[str, Any]]:
+def parse_generic_log(path: Path, fmt: str = "auto", max_line_length: int = 10_485_760) -> Iterator[dict[str, Any]]:
     """Parse generic log files with auto-detection.
 
     Supported formats:
@@ -86,64 +87,71 @@ def parse_generic_log(path: Path, fmt: str = "auto") -> Iterator[dict[str, Any]]
     Args:
         path: Path to the log file.
         fmt: Format hint (``auto``, ``jsonl``, ``csv``, ``syslog``, ``plain``).
+        max_line_length: Maximum bytes per line before truncation (default 10MB).
 
     Yields:
         Parsed event dictionaries.
     """
-    resolved = _detect_format(path) if fmt == "auto" else fmt
+    # Read entire file once to avoid TOCTOU between format detection and parsing
+    with open(path, encoding="utf-8") as fh:
+        all_lines = list(fh)
 
-    with open(path, encoding="utf-8") as f:
-        if resolved == "csv":
-            reader = csv.DictReader(f)
-            for row in reader:
-                yield {
-                    "source": "generic",
-                    "format": "csv",
-                    "timestamp": row.get("timestamp", row.get("time", datetime.now(UTC).isoformat())),
-                    "raw": dict(row),
-                }
-            return
+    # Detect format from the buffered lines
+    resolved = _detect_format(all_lines) if fmt == "auto" else fmt
 
-        if resolved == "jsonl":
-            for line in f:
-                line = line.strip()
-                if not line:
-                    continue
-                try:
-                    obj: dict[str, Any] = json.loads(line)
-                except json.JSONDecodeError:
-                    continue
-                yield {
-                    "source": "generic",
-                    "format": "jsonl",
-                    "timestamp": obj.get(
-                        "timestamp", obj.get("time", obj.get("@timestamp", datetime.now(UTC).isoformat()))
-                    ),
-                    "raw": obj,
-                }
-            return
+    def _safe_line(line: str) -> str:
+        return line[:max_line_length] if len(line) > max_line_length else line
 
-        if resolved == "syslog":
-            for lineno, line in enumerate(f, 1):
-                line = line.strip()
-                if not line:
-                    continue
-                parsed = _parse_syslog_line(line, lineno)
-                yield {
-                    "source": "generic",
-                    "format": "syslog",
-                    "timestamp": parsed["timestamp"] or datetime.now(UTC).isoformat(),
-                    "raw": parsed,
-                }
-            return
+    if resolved == "csv":
+        import io
+        reader = csv.DictReader(io.StringIO("\n".join(all_lines)))
+        for row in reader:
+            yield {
+                "source": "generic",
+                "format": "csv",
+                "timestamp": row.get("timestamp", row.get("time", datetime.now(UTC).isoformat())),
+                "raw": dict(row),
+            }
+        return
 
-        # plain text
-        for lineno, line in enumerate(f, 1):
-            line = line.strip()
-            if line:
-                yield {
-                    "source": "generic",
-                    "format": "plain",
-                    "timestamp": datetime.now(UTC).isoformat(),
-                    "raw": {"line": line, "lineno": lineno},
-                }
+    if resolved == "jsonl":
+        for raw_line in all_lines:
+            line = _safe_line(raw_line).strip()
+            if not line:
+                continue
+            try:
+                obj: dict[str, Any] = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            yield {
+                "source": "generic",
+                "format": "jsonl",
+                "timestamp": obj.get("timestamp", obj.get("time", obj.get("@timestamp", datetime.now(UTC).isoformat()))),
+                "raw": obj,
+            }
+        return
+
+    if resolved == "syslog":
+        for lineno, raw_line in enumerate(all_lines, 1):
+            line = _safe_line(raw_line).strip()
+            if not line:
+                continue
+            parsed = _parse_syslog_line(line, lineno)
+            yield {
+                "source": "generic",
+                "format": "syslog",
+                "timestamp": parsed["timestamp"] or datetime.now(UTC).isoformat(),
+                "raw": parsed,
+            }
+        return
+
+    # plain text
+    for lineno, raw_line in enumerate(all_lines, 1):
+        line = _safe_line(raw_line).strip()
+        if line:
+            yield {
+                "source": "generic",
+                "format": "plain",
+                "timestamp": datetime.now(UTC).isoformat(),
+                "raw": {"line": line, "lineno": lineno},
+            }

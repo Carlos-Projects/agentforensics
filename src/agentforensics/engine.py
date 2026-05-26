@@ -28,6 +28,9 @@ class ForensicsEngine:
     def __init__(self, db_path: str | Path = ":memory:") -> None:
         self._db_path = db_path
         self._timeline = TimelineBuilder(db_path)
+        # Isolate evidence chain per engine instance
+        from agentforensics.reports.evidence import clear_chain
+        clear_chain()
 
     def __enter__(self) -> ForensicsEngine:
         return self

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 from typing import Any
 
+from agentforensics.utils.dates import to_epoch as _to_epoch
+
 
 def detect_anomalies(
     events: list[dict[str, Any]],
@@ -134,10 +136,3 @@ def detect_anomalies(
     return anomalies
 
 
-def _to_epoch(ts: str) -> float:
-    try:
-        from datetime import datetime
-
-        return datetime.fromisoformat(ts.replace("Z", "+00:00")).timestamp()
-    except (ValueError, TypeError):
-        return 0.0

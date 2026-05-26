@@ -26,7 +26,7 @@ def parse_mcpguard_log(path: Path) -> Iterator[dict[str, Any]]:
     """
     with open(path, encoding="utf-8") as f:
         for line in f:
-            line = line.strip()
+            line = line[:10_485_760].strip()
             if not line:
                 continue
             try:

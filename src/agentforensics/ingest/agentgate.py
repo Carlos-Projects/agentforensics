@@ -11,6 +11,18 @@ from typing import Any
 from mcp_taxonomy import agentgate_signal_to_taxonomy
 
 
+def _safe_int(value: object, default: int = 0) -> int:
+    """Convert value to int, returning default on failure."""
+    if isinstance(value, (int, float, str)):
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+    return default
+
+
+
+
 def parse_agentgate_signal(path: Path) -> Iterator[dict[str, Any]]:
     """Parse AgentGate firewall signal file.
 
@@ -26,7 +38,7 @@ def parse_agentgate_signal(path: Path) -> Iterator[dict[str, Any]]:
     """
     with open(path, encoding="utf-8") as f:
         for line in f:
-            line = line.strip()
+            line = line[:10_485_760].strip()
             if not line:
                 continue
             try:
@@ -37,11 +49,11 @@ def parse_agentgate_signal(path: Path) -> Iterator[dict[str, Any]]:
             # agentgate_signal_to_taxonomy expects keyword arguments
             tax = agentgate_signal_to_taxonomy(
                 signal_type=raw.get("signal_type", raw.get("signal", "unknown")),
-                weight=int(raw.get("weight", 0)),
+                weight=_safe_int(raw.get("weight", 0)),
                 action=raw.get("action", ""),
                 path=raw.get("path", ""),
                 user_agent=raw.get("user_agent", ""),
-                score=int(raw.get("score", 0)),
+                score=_safe_int(raw.get("score", 0)),
             )
 
             yield {

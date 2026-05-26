@@ -2,17 +2,9 @@
 
 from __future__ import annotations
 
-from datetime import datetime
 from typing import Any
 
-
-def _to_epoch(ts: str) -> float:
-    """Best-effort conversion of an ISO timestamp to epoch seconds."""
-    try:
-        dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        return dt.timestamp()
-    except (ValueError, TypeError):
-        return 0.0
+from agentforensics.utils.dates import to_epoch as _to_epoch
 
 
 def correlate_events(
