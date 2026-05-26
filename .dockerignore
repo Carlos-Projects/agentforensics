@@ -1,0 +1,15 @@
+__pycache__
+*.pyc
+.git
+.gitignore
+.github
+.vscode
+.venv
+venv
+tests
+examples
+*.md
+*.db
+*.sqlite
+Dockerfile
+.dockerignore
