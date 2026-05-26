@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="margin-bottom:1rem;">Forensic Timeline</h1>
+
+<div class="actions">
+  <a href="/" class="btn">← Dashboard</a>
+  <a href="/reports?format=html" class="btn">Generate Report</a>
+</div>
+
+{% if event_count > 0 %}
+  <div class="stat-grid">
+    <div class="stat"><div class="value">{{ event_count }}</div><div class="label">Events</div></div>
+    <div class="stat"><div class="value">{{ group_count }}</div><div class="label">Correlated Groups</div></div>
+  </div>
+
+  <div class="chart-container">
+    {{ timeline_chart | safe }}
+  </div>
+  <div class="chart-container">
+    {{ risk_chart | safe }}
+  </div>
+
+  <div class="card">
+    <h2>Event Timeline</h2>
+    <div style="overflow-x:auto;max-height:600px;overflow-y:auto;">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Source</th><th>Severity</th><th>Event</th><th>Target</th><th>Risk</th><th>Timestamp</th><th>Blocked</th>
+        </tr></thead>
+        <tbody>
+          {% for ev in events %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><code>{{ ev.source }}</code></td>
+            <td class="sev-{{ ev.severity }}">{{ ev.severity }}</td>
+            <td>{{ ev.title or ev.event_type }}</td>
+            <td><code>{{ ev.target[:30] if ev.target else '—' }}</code></td>
+            <td>{{ "%.1f"|format(ev.risk_score|float) }}</td>
+            <td>{{ ev.timestamp[:19] }}</td>
+            <td><span class="badge badge-{{ 'blocked' if ev.blocked else 'allowed' }}">{{ 'BLOCKED' if ev.blocked else 'ALLOWED' }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h2>No events in timeline</h2>
+    <p>Use <code>agentforensics ingest</code> to load log data.</p>
+  </div>
+{% endif %}
+{% endblock %}

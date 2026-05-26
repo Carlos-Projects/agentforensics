@@ -1,0 +1,41 @@
+{
+  "incident_id": "INC-2025-001",
+  "timeline": [
+    {
+      "timestamp": "2025-01-15T10:00:00Z",
+      "source": "mcpguard",
+      "event": "tool_call: read_file(/etc/passwd)",
+      "severity": "low"
+    },
+    {
+      "timestamp": "2025-01-15T10:00:05Z",
+      "source": "mcpguard",
+      "event": "tool_call: execute_command(cat /etc/shadow) — BLOCKED",
+      "severity": "high"
+    },
+    {
+      "timestamp": "2025-01-15T10:00:06Z",
+      "source": "agentgate",
+      "event": "policy_violation: no_sensitive_file_access",
+      "severity": "high"
+    },
+    {
+      "timestamp": "2025-01-15T10:00:10Z",
+      "source": "mcpguard",
+      "event": "tool_call: http_request(external) — BLOCKED",
+      "severity": "critical"
+    }
+  ],
+  "anomalies": [
+    {
+      "type": "policy_deviation",
+      "description": "Agent attempted to access restricted file",
+      "confidence": 0.95
+    },
+    {
+      "type": "exfiltration_attempt",
+      "description": "Agent attempted to send data to external URL",
+      "confidence": 0.88
+    }
+  ]
+}

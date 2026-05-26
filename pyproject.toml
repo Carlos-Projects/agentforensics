@@ -1,0 +1,92 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "agentforensics"
+version = "0.1.0"
+description = "Post-incident forensics system for AI agents — record, reconstruct, and analyze agent behavior after security events"
+authors = [
+    { name = "Carlos Rocha", email = "carlos@carlosrocha.dev" },
+]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.11"
+keywords = [
+    "ai-forensics", "agent-security", "incident-response", "mcp-security",
+    "timeline-reconstruction", "behavior-analysis", "evidence-chain",
+    "compliance-auditing", "ai-agents", "forensic-analysis",
+]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Information Technology",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+
+dependencies = [
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "httpx>=0.27.0",
+    "jinja2>=3.1.0",
+    "plotly>=5.20.0",
+    "pydantic>=2.6.0",
+    "pydantic-settings>=2.0",
+    "rich>=13.7.0",
+    "typer>=0.12",
+    "mcp-taxonomy>=0.1.0",
+    "sqlite-utils>=3.36",
+    "orjson>=3.9",
+    "apscheduler>=3.10",
+    "cryptography>=42.0",
+    "python-dateutil>=2.9",
+]
+
+[project.optional-dependencies]
+pdf = ["weasyprint>=62.0"]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-httpx>=0.30",
+    "ruff>=0.4",
+    "mypy>=1.10",
+    "pre-commit>=3.7",
+]
+all = [
+    "agentforensics[pdf,dev]",
+]
+
+[project.scripts]
+agentforensics = "agentforensics.cli:app"
+
+[project.urls]
+Homepage = "https://github.com/Carlos-Projects/agentforensics"
+Repository = "https://github.com/Carlos-Projects/agentforensics"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/agentforensics"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 120
+extend-exclude = ["tests/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP", "B"]
+ignore = ["E501", "B904", "B008"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = false
+ignore_missing_imports = true
+warn_unused_ignores = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+asyncio_mode = "auto"

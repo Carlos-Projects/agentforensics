@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="stat-grid">
+  <div class="stat"><div class="value">{{ event_count }}</div><div class="label">Total Events</div></div>
+  <div class="stat"><div class="value">{{ source_count }}</div><div class="label">Sources</div></div>
+  <div class="stat"><div class="value">{{ type_count }}</div><div class="label">Event Types</div></div>
+  <div class="stat"><div class="value">{{ blocked_count }}</div><div class="label">Blocked Actions</div></div>
+</div>
+
+{% if event_count > 0 %}
+  <div class="actions">
+    <a href="/timeline" class="btn btn-primary">View Timeline</a>
+    <a href="/reports?format=html" class="btn">Generate Report</a>
+    <button class="btn btn-danger" hx-post="/ingest/sample" hx-target="#stats" hx-swap="outerHTML">Load Sample Data</button>
+  </div>
+
+  <div class="card">
+    <h2>Recent Events</h2>
+    <div style="overflow-x:auto;">
+      <table>
+        <thead><tr>
+          <th>#</th><th>Source</th><th>Severity</th><th>Event</th><th>Timestamp</th><th>Blocked</th>
+        </tr></thead>
+        <tbody>
+          {% for ev in recent_events %}
+          <tr>
+            <td>{{ loop.index }}</td>
+            <td><code>{{ ev.source }}</code></td>
+            <td class="sev-{{ ev.severity }}">{{ ev.severity }}</td>
+            <td>{{ ev.title or ev.event_type }}</td>
+            <td>{{ ev.timestamp[:19] }}</td>
+            <td><span class="badge badge-{{ 'blocked' if ev.blocked else 'allowed' }}">{{ 'BLOCKED' if ev.blocked else 'ALLOWED' }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="chart-container">
+    {{ severity_chart | safe }}
+  </div>
+  <div class="chart-container">
+    {{ timeline_chart | safe }}
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h2>No forensic data loaded</h2>
+    <p>Ingest logs via <code>agentforensics ingest</code> or load sample data to start investigating.</p>
+    <div class="actions" style="justify-content:center;margin-top:1.5rem;">
+      <button class="btn btn-primary" hx-post="/ingest/sample" hx-target="body" hx-swap="outerHTML">Load Sample Data</button>
+    </div>
+  </div>
+{% endif %}
+{% endblock %}

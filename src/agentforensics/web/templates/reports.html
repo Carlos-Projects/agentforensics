@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block content %}
+<h1 style="margin-bottom:1rem;">Forensic Reports</h1>
+
+<div class="actions">
+  <a href="/" class="btn">← Dashboard</a>
+  <a href="/reports?format=html" class="btn btn-primary">Refresh Report</a>
+  <a href="/reports?format=html&download=1" class="btn">Download HTML</a>
+</div>
+
+{% if event_count > 0 %}
+  <div class="card">
+    <h2>Compliance Check (NIST AI RMF)</h2>
+    <div class="stat-grid">
+      <div class="stat">
+        <div class="value" style="color: {{ 'green' if compliance.status == 'pass' else 'orange' if compliance.status == 'partial' else 'red' }};">{{ compliance.status }}</div>
+        <div class="label">Status</div>
+      </div>
+      <div class="stat"><div class="value">{{ compliance.passed }}/{{ compliance.total_checks }}</div><div class="label">Checks Passed</div></div>
+      <div class="stat"><div class="value">{{ compliance.failed }}</div><div class="label">Checks Failed</div></div>
+    </div>
+    <table>
+      <thead><tr><th>ID</th><th>Category</th><th>Check</th><th>Status</th><th>Details</th></tr></thead>
+      <tbody>
+        {% for check in compliance.checks %}
+        <tr>
+          <td><code>{{ check.id }}</code></td>
+          <td>{{ check.category }}</td>
+          <td>{{ check.title }}</td>
+          <td><span class="badge badge-{{ 'allowed' if check.status == 'pass' else 'blocked' }}">{{ check.status }}</span></td>
+          <td style="font-size:0.85rem;color:#666;">{{ check.details }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card">
+    <h2>Full Report</h2>
+    <div style="overflow-x:auto;max-height:800px;overflow-y:auto;font-size:0.9rem;">
+      {{ report_body | safe }}
+    </div>
+  </div>
+{% else %}
+  <div class="empty-state">
+    <h2>No data to report</h2>
+    <p>Ingest data first with <code>agentforensics ingest</code>.</p>
+  </div>
+{% endif %}
+{% endblock %}
