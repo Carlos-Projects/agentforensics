@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import html
 import logging
 from pathlib import Path
 from typing import Any, Literal
@@ -250,10 +251,13 @@ async def reports_page(
 
         return HTMLResp(content=report_body)
 
+    # Escape markdown/json output to prevent XSS via | safe in template
+    display_body = html.escape(report_body) if format != "html" else report_body
+
     return templates.TemplateResponse(
         request,
         "reports.html",
-        {"title": "Reports", "event_count": len(events), "compliance": compliance, "report_body": report_body},
+        {"title": "Reports", "event_count": len(events), "compliance": compliance, "report_body": display_body},
     )
 
 

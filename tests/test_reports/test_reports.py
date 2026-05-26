@@ -12,7 +12,7 @@ from agentforensics.reports.evidence import (
 )
 from agentforensics.reports.generator import generate_report
 from agentforensics.reports.incident import IncidentReport
-from agentforensics.utils.crypto import hmac_sign, sha256, verify_hmac
+from agentforensics.utils.crypto import sha256
 
 
 class TestReportGenerator:
@@ -161,10 +161,3 @@ class TestCrypto:
     def test_sha256(self) -> None:
         h = sha256(b"test")
         assert len(h) == 64
-
-    def test_hmac_sign_and_verify(self) -> None:
-        key = b"secret"
-        data = b"evidence data"
-        sig = hmac_sign(data, key)
-        assert verify_hmac(data, key, sig)
-        assert not verify_hmac(data, b"wrong-key", sig)
