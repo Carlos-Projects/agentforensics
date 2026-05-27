@@ -130,6 +130,12 @@ export_events_to_mcpscop(timeline, base_url="http://localhost:9000", api_key="..
     MCPGuard logs      AgentGate signals
 ```
 
+## Dashboard
+
+![AgentForensics Dashboard](docs/source/_static/dashboard.png)
+
+*Web dashboard showing sample forensic data with event timeline, severity breakdown, and source distribution.*
+
 ## Integration with the MCP Security Ecosystem
 
 - **Consumes** logs from [MCPGuard](https://github.com/Carlos-Projects/mcpguard) and signals from [AgentGate](https://github.com/Carlos-Projects/agentgate)
@@ -142,6 +148,19 @@ export_events_to_mcpscop(timeline, base_url="http://localhost:9000", api_key="..
 See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
 
 Full API documentation is available at [ReadTheDocs](https://agentforensics.readthedocs.io) (coming soon).
+
+## Development
+
+```bash
+make dev-install   # Install with all extras
+make check         # Run lint + typecheck + tests
+make test-cov      # Run tests with coverage report
+make docs          # Build Sphinx documentation
+make build         # Build distribution artifacts
+make clean         # Remove build artifacts and caches
+```
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for detailed guidelines.
 
 ## Testing
 
