@@ -1,0 +1,10 @@
+version: "3.9"
+
+services:
+  agentforensics:
+    build: .
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./forensics.db:/app/forensics.db
+    command: agentforensics serve --host 0.0.0.0 --port 8000

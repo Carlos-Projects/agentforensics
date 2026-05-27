@@ -7,6 +7,8 @@
 [![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen?logo=pytest)](https://github.com/Carlos-Projects/agentforensics/actions)
 [![Mypy](https://img.shields.io/badge/mypy-0%20errors-success?logo=python)](https://github.com/Carlos-Projects/agentforensics)
 [![Ruff](https://img.shields.io/badge/ruff-clean-success?logo=python)](https://github.com/Carlos-Projects/agentforensics)
+[![Docs](https://img.shields.io/badge/docs-ReadTheDocs-blue?logo=readthedocs)](https://agentforensics.readthedocs.io)
+[![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa)](CODE_OF_CONDUCT.md)
 [![GitHub stars](https://img.shields.io/github/stars/Carlos-Projects/agentforensics?style=social)](https://github.com/Carlos-Projects/agentforensics)
 
 **Reconstruct what the AI agent did — after the damage is done.**
@@ -71,6 +73,21 @@ agentforensics report --format markdown --output incident_report.md
 agentforensics serve --port 8000
 ```
 
+### Docker
+
+```bash
+docker compose up -d
+# Open http://localhost:8000
+```
+
+### Optional extras
+
+```bash
+pip install agentforensics[export]   # MCPscop webhook integration (httpx)
+pip install agentforensics[pdf]      # PDF report export (weasyprint)
+pip install agentforensics[all]      # Everything
+```
+
 ### Python API
 
 ```python
@@ -84,6 +101,10 @@ engine.ingest_agentgate(Path("agentgate.log"))
 timeline = engine.build_timeline()
 report = engine.generate_report(fmt="markdown")
 print(report)
+
+# Export to MCPscop dashboard
+from agentforensics.export import export_events_to_mcpscop
+export_events_to_mcpscop(timeline, base_url="http://localhost:9000", api_key="...")
 ```
 
 ## Architecture
