@@ -7,7 +7,7 @@ name = "agentforensics"
 version = "0.1.1"
 description = "Post-incident forensics system for AI agents — record, reconstruct, and analyze agent behavior after security events"
 authors = [
-    { name = "Carlos Rocha", email = "carlos@carlosrocha.dev" },
+    { name = "Carlos-Projects", email = "Carlos@AIAgentObservatory.org" },
 ]
 license = { text = "MIT" }
 readme = "README.md"

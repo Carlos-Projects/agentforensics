@@ -10,8 +10,8 @@ sys.path.insert(0, os.path.abspath("../../src"))
 from agentforensics import __version__  # noqa: E402
 
 project = "AgentForensics"
-copyright = "2026, Carlos Rocha"
-author = "Carlos Rocha"
+copyright = "2026, Carlos-Projects"
+author = "Carlos-Projects"
 release = __version__
 
 extensions = [

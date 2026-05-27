@@ -14,7 +14,7 @@ We take the security of AgentForensics seriously. If you believe you have found 
 
 Instead, please report them via:
 
-- **Email**: carlos@carlosrocha.dev
+- **Email**: Carlos@AIAgentObservatory.org
 - **GitHub Security Advisories**: Use the "Security" tab in this repository
 
 You should receive a response within 48 hours. If for some reason you do not, please follow up via email to ensure we received your original message.
