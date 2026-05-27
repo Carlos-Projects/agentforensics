@@ -39,7 +39,7 @@ _IS_PRODUCTION = Path("/etc/agentforensics-prod").exists()
 
 app = FastAPI(
     title="AgentForensics",
-    version="0.1.0",
+    version="0.1.1",
     docs_url=None if _IS_PRODUCTION else "/docs",
     openapi_url=None if _IS_PRODUCTION else "/openapi.json",
     redoc_url=None,
@@ -69,12 +69,14 @@ def _get_engine() -> ForensicsEngine:
     global _engine
     if _engine is None:
         import tempfile
+
         db_path = tempfile.mktemp(suffix=".db")
         _engine = ForensicsEngine(db_path=db_path)
         _load_sample_data()
     # mypy narrows type: _engine is guaranteed non-None after the if block
     assert _engine is not None
     return _engine
+
 
 _SAMPLE_EVENTS: list[dict[str, Any]] = [
     {
@@ -313,7 +315,11 @@ async def ingest_sample(request: Request) -> HTMLResponse:
 async def list_incidents() -> list[dict[str, Any]]:
     """List all forensic incidents."""
     return [
-        {"incident_id": "INC-2025-001", "event_count": len(_get_engine().build_timeline()), "sources": _get_engine().get_sources()}
+        {
+            "incident_id": "INC-2025-001",
+            "event_count": len(_get_engine().build_timeline()),
+            "sources": _get_engine().get_sources(),
+        }
     ]
 
 

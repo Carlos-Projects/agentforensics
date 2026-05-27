@@ -4,7 +4,7 @@
 [![PyPI version](https://img.shields.io/pypi/v/agentforensics?logo=pypi)](https://pypi.org/project/agentforensics/)
 [![Python](https://img.shields.io/badge/python-3.11%2B-blue?logo=python)](https://python.org)
 [![License](https://img.shields.io/github/license/Carlos-Projects/agentforensics?logo=opensourceinitiative)](LICENSE)
-[![Coverage](https://img.shields.io/badge/coverage-92%25-brightgreen?logo=pytest)](https://github.com/Carlos-Projects/agentforensics/actions)
+[![Coverage](https://img.shields.io/badge/coverage-93%25-brightgreen?logo=pytest)](https://github.com/Carlos-Projects/agentforensics/actions)
 [![Mypy](https://img.shields.io/badge/mypy-0%20errors-success?logo=python)](https://github.com/Carlos-Projects/agentforensics)
 [![Ruff](https://img.shields.io/badge/ruff-clean-success?logo=python)](https://github.com/Carlos-Projects/agentforensics)
 [![GitHub stars](https://img.shields.io/github/stars/Carlos-Projects/agentforensics?style=social)](https://github.com/Carlos-Projects/agentforensics)
