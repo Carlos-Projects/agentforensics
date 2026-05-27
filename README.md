@@ -116,6 +116,12 @@ print(report)
 - **Uses** [mcp-taxonomy](https://github.com/Carlos-Projects/mcp-taxonomy) for standardized classification
 - **Follows** the same stack pattern as MCPscop (FastAPI, SQLite, Plotly, HTMX)
 
+## Documentation
+
+See [CHANGELOG.md](CHANGELOG.md) for release history and [CONTRIBUTING.md](CONTRIBUTING.md) for development guidelines.
+
+Full API documentation is available at [ReadTheDocs](https://agentforensics.readthedocs.io) (coming soon).
+
 ## Testing
 
 ```bash

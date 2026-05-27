@@ -73,6 +73,38 @@
 - CLI tests for replay command, analyze, timeline --json, report --output
 - Coverage: 82% → 93%
 
+### Repo Quality (Round 3)
+
+**Community & Governance**
+- Add `CODE_OF_CONDUCT.md` (Contributor Covenant v2.1)
+- Add `.github/ISSUE_TEMPLATE/bug_report.md` and `feature_request.md`
+- Add `.github/PULL_REQUEST_TEMPLATE.md`
+
+**Docs & Dev Experience**
+- Add `.editorconfig` for consistent editor settings
+- Add `.readthedocs.yaml` for ReadTheDocs deployment
+- Add `docs/` with Sphinx config (furo theme, autodoc, napoleon)
+- Link CHANGELOG.md from README
+- Add AGENTS.md per-project documentation
+- Add `py.typed` marker for PEP 561 type hint compliance
+
+**CI/CD**
+- Add mypy step to GitHub Actions CI
+- Update pre-commit hooks to latest versions (ruff v0.11.5, mypy v1.15.0, hooks v5.0.0)
+- Add `export` and `docs` optional dependency groups to pyproject.toml
+
+**Integration**
+- Add `src/agentforensics/export/` module with MCPscop webhook exporter
+- Add `src/agentforensics/export/mcpscop.py` — export events and compliance to MCPscop dashboard
+- Add `src/agentforensics/export/mcpguard_policy.py` — generate MCPGuard-compatible YAML policies
+
+**Examples**
+- Add `examples/quickstart.py` — self-contained end-to-end pipeline demo
+
+**Tests**
+- 12 new export tests (MCPGuard policy + MCPscop adapters), 165 total tests
+- Coverage maintained at 93%
+
 ## [0.1.0] — 2026-05-26
 
 ### Initial Release

@@ -10,8 +10,10 @@ Post-incident forensics system for AI agents — record, reconstruct, and analyz
 - Incident reports (markdown/HTML/JSON), SHA-256 evidence chain, NIST AI RMF compliance
 - Web dashboard with HTMX, REST API, CLI
 - mcp-taxonomy integration for normalized event classification
-- Test: `python -m pytest tests/ -v` (153 tests, 93% coverage)
+- MCPGuard policy exporter, MCPscop webhook integration
+- Test: `python -m pytest tests/ -v` (165 tests, 93% coverage)
 - Lint: `ruff check src/ tests/` (0 errors)
 - Type check: `mypy src/agentforensics/` (0 errors, strict config)
+- Sphinx docs at `docs/`, ReadTheDocs ready
 - GitHub: Carlos-Projects/agentforensics
-- PyPI: `agentforensics` (v0.1.0)
+- PyPI: `agentforensics` (v0.1.1)

@@ -46,6 +46,12 @@ dependencies = [
 
 [project.optional-dependencies]
 pdf = ["weasyprint>=62.0"]
+export = ["httpx>=0.27"]
+docs = [
+    "sphinx>=7.0",
+    "furo>=2024.0",
+    "sphinx-autodoc-typehints>=2.0",
+]
 dev = [
     "pytest>=8.0",
     "pytest-asyncio>=0.24",
@@ -55,7 +61,7 @@ dev = [
     "pre-commit>=3.7",
 ]
 all = [
-    "agentforensics[pdf,dev]",
+    "agentforensics[pdf,export,docs,dev]",
 ]
 
 [project.scripts]
