@@ -1,0 +1,76 @@
+schema: carlos-harness/v1
+project:
+  name: AgentForensics
+  owner: Carlos Rocha
+  status: active
+  domain: ai-agent-forensics
+  summary: "Post-incident evidence reconstruction, replay, and audit reporting for autonomous AI agents."
+
+context_budget:
+  startup_files:
+    - AGENTS.md
+    - HARNESS.yml
+    - progress/current.md
+    - docs/architecture.md
+    - docs/verification.md
+  max_startup_lines: 500
+  prefer_search_over_bulk_read: true
+
+agent_adapters:
+  codex:
+    entrypoint: AGENTS.md
+    progress_file: progress/current.md
+  opencode:
+    config_file: opencode.jsonc
+    instructions:
+      - AGENTS.md
+      - HARNESS.yml
+      - progress/current.md
+    use_skills_for_execution_not_memory: true
+  claude:
+    entrypoint: AGENTS.md
+  cursor:
+    entrypoint: AGENTS.md
+
+commands:
+  setup:
+    - pip install -e ".[all]"
+  test:
+    - python -m pytest tests/ -v --tb=short
+  lint:
+    - ruff check src/ tests/
+  typecheck:
+    - mypy src/agentforensics/
+  build:
+    - python -m build
+  security:
+    - python -m pytest tests/ -v --tb=short
+
+governance:
+  policy_file: policies/default.yaml
+  audit_log: progress/audit.jsonl
+  token_budget:
+    max_tokens_per_session: 120000
+    max_tokens_per_task: 30000
+  approval_required_for:
+    - secrets
+    - production_deploy
+    - database_migration
+    - destructive_command
+    - public_publish
+
+evidence:
+  required_artifacts:
+    - progress/current.md
+    - progress/history.md
+  optional_artifacts:
+    - reports/security.md
+    - reports/test-results.md
+    - reports/redteam.md
+
+integrations:
+  obsidian_notes:
+    - "/Users/carlosrocha/Documents/Obsidian Vault/03_Projects/AgentForensics"
+  github_repo: "Carlos-Projects/agentforensics"
+  website: ""
+  package: "agentforensics"
