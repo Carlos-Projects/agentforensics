@@ -1,6 +1,29 @@
 # Contributing to AgentForensics
 
-Thank you for your interest in contributing to AgentForensics! This document provides guidelines and instructions for contributing.
+👋 **Hello and welcome to AgentForensics!**
+
+Thank you for considering contributing to our post-incident forensics system for AI agents. Whether you're an experienced developer or just starting your journey in AI security, your contributions help make agent behavior analysis more robust and accessible.
+
+## First Time Contributor?
+
+Here's how to dive in:
+
+- Look for issues labeled `good first issue`
+- Try running the existing test suite and improving coverage
+- Add a new visualization to the dashboard
+- Improve documentation or write a tutorial
+- Report bugs or suggest features — your feedback matters!
+
+We welcome contributors of all skill levels. Don't be shy — jump in!
+
+## Need Help?
+
+Questions or concerns?
+
+- Open a [GitHub Issue](https://github.com/Carlos-Projects/agentforensics/issues)
+- Search existing issues first
+- Tag appropriately (bug, enhancement, documentation)
+- Include Python version, OS, and steps to reproduce for bugs
 
 ## Development Setup
 
@@ -54,3 +77,7 @@ We aim for **60+ tests** and **>80% coverage**.
 ## License
 
 By contributing, you agree that your contributions will be licensed under the MIT License.
+
+---
+
+💡 This project is governed by a [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you agree to uphold its principles.
