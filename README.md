@@ -10,6 +10,7 @@
 [![Docs](https://img.shields.io/badge/docs-ReadTheDocs-blue?logo=readthedocs)](https://agentforensics.readthedocs.io)
 [![Code of Conduct](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa)](CODE_OF_CONDUCT.md)
 [![GitHub stars](https://img.shields.io/github/stars/Carlos-Projects/agentforensics?style=social)](https://github.com/Carlos-Projects/agentforensics)
+[![Star History](https://img.shields.io/badge/Star-History-blue?style=social)](https://api.star-history.com/svg?repos=Carlos-Projects/agentforensics&type=Date)
 
 **Reconstruct what the AI agent did — after the damage is done.**
 
