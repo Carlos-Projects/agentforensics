@@ -6,6 +6,7 @@ import json
 import tempfile
 from pathlib import Path
 
+from agentforensics import engine
 from agentforensics.engine import ForensicsEngine
 
 
@@ -147,6 +148,33 @@ class TestForensicsEngine:
         results = engine.query_events(min_risk=5.0)
         assert len(results) == 1
         assert results[0]["risk_score"] == 7.0
+    
+    def test_query_events_date_range(self) -> None:
+        engine = ForensicsEngine()
+
+        engine.ingest_structured(
+        {
+            "source": "a",
+            "event_type": "x",
+            "timestamp": "2025-01-01T00:00:00Z",
+        }
+    )
+
+        engine.ingest_structured(
+        {
+            "source": "a",
+            "event_type": "x",
+            "timestamp": "2025-01-10T00:00:00Z",
+        }
+    )
+
+        results = engine.query_events(
+        start_time="2025-01-05T00:00:00Z",
+        end_time="2025-01-15T00:00:00Z",
+    )
+
+        assert len(results) == 1
+        assert results[0]["timestamp"] == "2025-01-10T00:00:00Z"
 
     def test_analyze_anomalies_with_blocked_chain(self) -> None:
         engine = ForensicsEngine()
