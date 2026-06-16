@@ -30,6 +30,7 @@ class ForensicsEngine:
         self._timeline = TimelineBuilder(db_path)
         # Isolate evidence chain per engine instance
         from agentforensics.reports.evidence import clear_chain
+
         clear_chain()
 
     def __enter__(self) -> ForensicsEngine:
@@ -95,12 +96,22 @@ class ForensicsEngine:
         """
         return self._timeline.insert(event)
 
-    def build_timeline(self) -> list[dict[str, Any]]:
-        """Build and return the full forensic timeline.
+    def build_timeline(
+        self,
+        start_time: str | None = None,
+        end_time: str | None = None,
+    ) -> list[dict[str, Any]]:
+        """Build and return the forensic timeline.
+
+        Args:
+            start_time: Optional ISO 8601 start timestamp filter.
+            end_time: Optional ISO 8601 end timestamp filter.
 
         Returns:
-            Sorted list of all events.
+            Sorted list of all events, optionally filtered by date range.
         """
+        if start_time or end_time:
+            return self._timeline.query(start_time=start_time, end_time=end_time)
         return self._timeline.get_timeline()
 
     def get_sources(self) -> list[str]:
