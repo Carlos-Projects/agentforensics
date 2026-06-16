@@ -6,7 +6,6 @@ import json
 import tempfile
 from pathlib import Path
 
-from agentforensics import engine
 from agentforensics.engine import ForensicsEngine
 
 
@@ -148,7 +147,7 @@ class TestForensicsEngine:
         results = engine.query_events(min_risk=5.0)
         assert len(results) == 1
         assert results[0]["risk_score"] == 7.0
-    
+
     def test_query_events_date_range(self) -> None:
         engine = ForensicsEngine()
 

@@ -48,7 +48,7 @@ app = FastAPI(
 # CORS — local tool, restrict to same-origin by default
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://127.0.0.1", "http://localhost"],
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["GET", "POST", "HEAD"],
     allow_headers=["*"],
