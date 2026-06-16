@@ -100,6 +100,8 @@ class TimelineBuilder:
         event_type: str | None = None,
         severity: str | None = None,
         min_risk: float | None = None,
+        start_time: str |None=None,
+        end_time : str | None = None,
         limit: int = 1000,
         offset: int = 0,
     ) -> list[dict[str, Any]]:
@@ -119,6 +121,12 @@ class TimelineBuilder:
         if min_risk is not None:
             where.append("risk_score >= ?")
             params.append(min_risk)
+        if start_time:
+            where.append("timestamp >= ?")
+            params.append(start_time)
+        if end_time:
+            where.append("timestamp <=?")
+            params.append(end_time)
 
         # WARNING: `where` list must only contain hardcoded clauses with ?
         # placeholders for values. NEVER interpolate user-controlled strings

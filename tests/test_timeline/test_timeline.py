@@ -68,6 +68,28 @@ class TestTimelineBuilder:
         results = tb.query(min_risk=5.0)
         assert len(results) == 1
 
+    def test_query_by_time_range(self) -> None:
+        tb = TimelineBuilder()
+        tb.insert({
+        "source": "a",
+        "event_type": "x",
+        "timestamp": "2025-01-01T00:00:00Z"
+        })
+
+        tb.insert({
+        "source": "a",
+        "event_type": "x",
+        "timestamp": "2025-01-10T00:00:00Z"
+        })
+
+        results = tb.query(
+        start_time="2025-01-05T00:00:00Z",
+        end_time="2025-01-15T00:00:00Z"
+    )
+
+        assert len(results) == 1
+        assert results[0]["timestamp"] == "2025-01-10T00:00:00Z"
+
     def test_sources_distinct(self) -> None:
         tb = TimelineBuilder()
         tb.insert({"source": "a", "event_type": "x", "timestamp": "2025-01-01T00:00:00Z"})

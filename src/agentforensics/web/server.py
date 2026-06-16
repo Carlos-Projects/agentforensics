@@ -203,10 +203,10 @@ async def index(request: Request) -> HTMLResponse:
 
 
 @app.get("/timeline", response_class=HTMLResponse)
-async def timeline_page(request: Request) -> HTMLResponse:
+async def timeline_page(request: Request,start_time :str | None = None, end_time:str |None= None) -> HTMLResponse:
     """Render the forensic timeline view."""
     engine = _get_engine()
-    events = engine.build_timeline()
+    events = engine.build_timeline(start_time=start_time,end_time=end_time)
     from agentforensics.timeline.correlator import correlate_events
 
     groups = correlate_events(events)
@@ -324,10 +324,10 @@ async def list_incidents() -> list[dict[str, Any]]:
 
 
 @app.get("/api/timeline/{incident_id}")
-async def get_timeline(incident_id: str) -> dict[str, Any]:
+async def get_timeline(incident_id: str,start_time:str | None = None, end_time : str | None = None) -> dict[str, Any]:
     """Get timeline for a specific incident."""
     engine = _get_engine()
-    events = engine.build_timeline()
+    events = engine.build_timeline(start_time=start_time,end_time=end_time)
     return {"incident_id": incident_id, "event_count": len(events), "events": events}
 
 
