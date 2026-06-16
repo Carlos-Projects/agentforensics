@@ -132,6 +132,8 @@ class ForensicsEngine:
         event_type: str | None = None,
         severity: str | None = None,
         min_risk: float | None = None,
+        start_time : str |None = None,
+        end_time : str | None = None,
         limit: int = 1000,
     ) -> list[dict[str, Any]]:
         """Query events with optional filters."""
@@ -140,6 +142,8 @@ class ForensicsEngine:
             event_type=event_type,
             severity=severity,
             min_risk=min_risk,
+            start_time=start_time,
+            end_time=end_time,
             limit=limit,
         )
 

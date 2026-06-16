@@ -36,6 +36,14 @@ async def test_timeline_page(client: AsyncClient) -> None:
     assert resp.status_code == 200
     assert "Timeline" in resp.text
 
+@pytest.mark.asyncio
+async def test_timeline_page_with_date_filters(client: AsyncClient) -> None:
+    resp = await client.get(
+        "/timeline?start_date=2025-01-01T00:00:00Z&end_date=2025-01-31T23:59:59Z"
+    )
+    assert resp.status_code == 200
+    assert "Timeline" in resp.text
+
 
 @pytest.mark.asyncio
 async def test_reports_page(client: AsyncClient) -> None:
@@ -60,7 +68,7 @@ async def test_api_incidents(client: AsyncClient) -> None:
 
 @pytest.mark.asyncio
 async def test_api_timeline(client: AsyncClient) -> None:
-    resp = await client.get("/api/timeline/INC-001")
+    resp = await client.get("/api/timeline/INC-001""?start_time=2025-02-01T00:00:00z""&end_time=2025-02-28T23:59:59z")
     assert resp.status_code == 200
     data = resp.json()
     assert data["incident_id"] == "INC-001"
